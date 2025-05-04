@@ -11,7 +11,14 @@ import './styles/budget.css'
 import '@fortawesome/fontawesome-free/css/all.min.css'
 import App from './App.jsx'
 
-// Mock API server is disabled for now
+// Import and start the mock API server
+import { startMockServer } from './mockApi'
+
+// Start the mock server in development or when no backend is available
+if (import.meta.env.DEV || !import.meta.env.VITE_API_URL) {
+  console.log('Starting mock server...')
+  startMockServer()
+}
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
