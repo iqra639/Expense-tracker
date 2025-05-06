@@ -1,27 +1,52 @@
-// Mock Auth Service
-// This file provides mock implementations of authentication functions
-// for development and testing purposes
+import axios from 'axios';
+import { API_URL } from '../config';
 
-// Helper function to simulate API delay
+// Helper function to simulate API delay for fallback
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 // Register user
 export const register = async (userData) => {
-  console.log('Mock register service called with:', userData);
+  console.log('Register service called with:', userData);
 
-  // Simulate API delay
-  await delay(800);
+  try {
+    const response = await axios.post(`${API_URL}/auth/register`, userData);
+    console.log('Register API response:', response.data);
 
-  // Always return success for mock
-  return {
-    success: true,
-    token: 'mock-jwt-token-' + Date.now(),
-    user: {
-      id: Math.floor(Math.random() * 1000) + 1,
-      username: 'Iqra',
-      email: 'Iqrazafarzafar647@gmail.com'
+    if (response.data.success) {
+      // Store token in localStorage
+      localStorage.setItem('token', response.data.token);
+      localStorage.setItem('user', JSON.stringify(response.data.user));
     }
-  };
+
+    return response.data;
+  } catch (error) {
+    console.error('Register error:', error);
+
+    // Fallback to mock for development
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Using mock register fallback');
+      await delay(800);
+      const mockResponse = {
+        success: true,
+        token: 'mock-jwt-token-' + Date.now(),
+        user: {
+          id: Math.floor(Math.random() * 1000) + 1,
+          username: userData.username || 'Iqra',
+          email: userData.email || 'Iqrazafarzafar647@gmail.com'
+        }
+      };
+
+      localStorage.setItem('token', mockResponse.token);
+      localStorage.setItem('user', JSON.stringify(mockResponse.user));
+
+      return mockResponse;
+    }
+
+    return {
+      success: false,
+      error: error.response?.data?.error || 'Registration failed. Please try again.'
+    };
+  }
 };
 
 // Login user
@@ -40,6 +65,7 @@ export const login = async (userData) => {
         username: 'Iqra',
         email: 'Iqrazafarzafar647@gmail.com'
       };
+      localStorage.setItem('token', token);
       localStorage.setItem('user', JSON.stringify(user));
 
       return {
@@ -49,22 +75,44 @@ export const login = async (userData) => {
       };
     }
 
-    // Otherwise, try to use the API
+    // Try to use the real API
     console.log('Attempting to login via API');
-    return {
-      success: true,
-      token: 'mock-jwt-token-' + Date.now(),
-      user: {
-        id: 1,
-        username: 'Iqra',
-        email: 'Iqrazafarzafar647@gmail.com'
-      }
-    };
+    const response = await axios.post(`${API_URL}/auth/login`, userData);
+    console.log('Login API response:', response.data);
+
+    if (response.data.success) {
+      // Store token in localStorage
+      localStorage.setItem('token', response.data.token);
+      localStorage.setItem('user', JSON.stringify(response.data.user));
+    }
+
+    return response.data;
   } catch (error) {
     console.error('Login error:', error);
+
+    // Fallback to mock for development
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Using mock login fallback');
+      await delay(800);
+      const mockResponse = {
+        success: true,
+        token: 'mock-jwt-token-' + Date.now(),
+        user: {
+          id: 1,
+          username: 'Iqra',
+          email: 'Iqrazafarzafar647@gmail.com'
+        }
+      };
+
+      localStorage.setItem('token', mockResponse.token);
+      localStorage.setItem('user', JSON.stringify(mockResponse.user));
+
+      return mockResponse;
+    }
+
     return {
       success: false,
-      error: 'Invalid email or password. Try test@example.com / password123'
+      error: error.response?.data?.error || 'Login failed. Please try again.'
     };
   }
 };
@@ -85,7 +133,27 @@ export const getCurrentUser = async () => {
       };
     }
 
-    if (token.includes('mock-jwt-token')) {
+    // Try to get user from API first
+    try {
+      const response = await axios.get(`${API_URL}/auth/me`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      console.log('getCurrentUser API response:', response.data);
+
+      if (response.data.success) {
+        // Update stored user
+        localStorage.setItem('user', JSON.stringify(response.data.user));
+        return response.data;
+      }
+    } catch (apiError) {
+      console.error('API error in getCurrentUser:', apiError);
+      // Fall through to use localStorage as fallback
+    }
+
+    // Fallback to localStorage
+    if (token.includes('mock-jwt-token') || process.env.NODE_ENV === 'development') {
       // Get user from localStorage if available
       const storedUser = localStorage.getItem('user');
       console.log('Stored user:', storedUser);

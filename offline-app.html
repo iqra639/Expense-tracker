@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Expense Tracker (Offline Version)</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background-color: #4a6cf7;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-radius: 5px 5px 0 0;
+        }
+        .content {
+            background-color: white;
+            padding: 20px;
+            border-radius: 0 0 5px 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #4a6cf7;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #3a5ce5;
+        }
+        .expense-list {
+            margin-top: 20px;
+        }
+        .expense-item {
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .expense-item:last-child {
+            border-bottom: none;
+        }
+        .expense-title {
+            font-weight: bold;
+        }
+        .expense-amount {
+            font-weight: bold;
+        }
+        .expense-amount.positive {
+            color: green;
+        }
+        .expense-amount.negative {
+            color: red;
+        }
+        .summary {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+        .summary-box {
+            flex: 1;
+            padding: 15px;
+            border-radius: 5px;
+            text-align: center;
+            margin: 0 5px;
+        }
+        .income {
+            background-color: rgba(0, 128, 0, 0.1);
+            border: 1px solid rgba(0, 128, 0, 0.2);
+        }
+        .expense {
+            background-color: rgba(255, 0, 0, 0.1);
+            border: 1px solid rgba(255, 0, 0, 0.2);
+        }
+        .balance {
+            background-color: rgba(0, 0, 255, 0.1);
+            border: 1px solid rgba(0, 0, 255, 0.2);
+        }
+        .delete-btn {
+            background-color: #ff4d4d;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 3px;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+        .delete-btn:hover {
+            background-color: #ff3333;
+        }
+        .user-info {
+            text-align: right;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+        .chart-container {
+            margin-top: 20px;
+            height: 300px;
+            position: relative;
+        }
+        .bar {
+            position: absolute;
+            bottom: 0;
+            width: 40px;
+            background-color: #4a6cf7;
+            border-radius: 5px 5px 0 0;
+            transition: height 0.3s;
+        }
+        .bar-label {
+            position: absolute;
+            bottom: -25px;
+            text-align: center;
+            width: 40px;
+            font-size: 12px;
+        }
+        .chart-y-axis {
+            position: absolute;
+            left: -40px;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Expense Tracker</h1>
+            <p>Track your income and expenses</p>
+        </div>
+        
+        <div class="user-info">
+            Logged in as: <strong>Iqra</strong> (Iqrazafarzafar647@gmail.com)
+        </div>
+        
+        <div class="content">
+            <div class="summary">
+                <div class="summary-box balance">
+                    <h3>Balance</h3>
+                    <h2 id="balance">$0.00</h2>
+                </div>
+                <div class="summary-box income">
+                    <h3>Income</h3>
+                    <h2 id="income">$0.00</h2>
+                </div>
+                <div class="summary-box expense">
+                    <h3>Expense</h3>
+                    <h2 id="expense">$0.00</h2>
+                </div>
+            </div>
+            
+            <h2>Add New Transaction</h2>
+            <form id="expense-form">
+                <div class="form-group">
+                    <label for="title">Title</label>
+                    <input type="text" id="title" placeholder="Enter title..." required>
+                </div>
+                <div class="form-group">
+                    <label for="amount">Amount</label>
+                    <input type="number" id="amount" placeholder="Enter amount..." required>
+                    <small>Use negative values for expenses, positive for income</small>
+                </div>
+                <div class="form-group">
+                    <label for="category">Category</label>
+                    <select id="category">
+                        <option value="Food">Food</option>
+                        <option value="Housing">Housing</option>
+                        <option value="Transportation">Transportation</option>
+                        <option value="Entertainment">Entertainment</option>
+                        <option value="Utilities">Utilities</option>
+                        <option value="Income">Income</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                <button type="submit">Add Transaction</button>
+            </form>
+        </div>
+        
+        <div class="content">
+            <h2>Transactions</h2>
+            <div id="expense-list" class="expense-list">
+                <!-- Expenses will be added here dynamically -->
+            </div>
+        </div>
+        
+        <div class="content">
+            <h2>Monthly Expense Chart</h2>
+            <div class="chart-container" id="chart-container">
+                <div class="chart-y-axis" id="chart-y-axis">
+                    <!-- Y-axis labels will be added dynamically -->
+                </div>
+                <!-- Bars will be added here dynamically -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Sample data - stored in localStorage to persist between sessions
+        let expenses = JSON.parse(localStorage.getItem('expenses')) || [
+            { id: 1, title: 'Groceries', amount: -50.25, category: 'Food', date: '2023-04-15' },
+            { id: 2, title: 'Salary', amount: 2000, category: 'Income', date: '2023-04-01' },
+            { id: 3, title: 'Rent', amount: -800, category: 'Housing', date: '2023-04-05' }
+        ];
+
+        // DOM elements
+        const expenseForm = document.getElementById('expense-form');
+        const expenseList = document.getElementById('expense-list');
+        const titleInput = document.getElementById('title');
+        const amountInput = document.getElementById('amount');
+        const categoryInput = document.getElementById('category');
+        const balanceEl = document.getElementById('balance');
+        const incomeEl = document.getElementById('income');
+        const expenseEl = document.getElementById('expense');
+        const chartContainer = document.getElementById('chart-container');
+        const chartYAxis = document.getElementById('chart-y-axis');
+
+        // Update summary
+        function updateSummary() {
+            const amounts = expenses.map(expense => expense.amount);
+            
+            const total = amounts.reduce((acc, item) => (acc += item), 0).toFixed(2);
+            const income = amounts
+                .filter(item => item > 0)
+                .reduce((acc, item) => (acc += item), 0)
+                .toFixed(2);
+            const expense = (amounts
+                .filter(item => item < 0)
+                .reduce((acc, item) => (acc += item), 0) * -1)
+                .toFixed(2);
+            
+            balanceEl.textContent = `$${total}`;
+            incomeEl.textContent = `$${income}`;
+            expenseEl.textContent = `$${expense}`;
+        }
+
+        // Display expenses
+        function displayExpenses() {
+            expenseList.innerHTML = '';
+            
+            if (expenses.length === 0) {
+                expenseList.innerHTML = '<p>No transactions found</p>';
+                return;
+            }
+            
+            expenses.forEach(expense => {
+                const expenseItem = document.createElement('div');
+                expenseItem.classList.add('expense-item');
+                
+                const expenseInfo = document.createElement('div');
+                expenseInfo.innerHTML = `
+                    <div class="expense-title">${expense.title}</div>
+                    <div class="expense-category">${expense.category}</div>
+                `;
+                
+                const expenseAmount = document.createElement('div');
+                expenseAmount.classList.add('expense-amount');
+                if (expense.amount > 0) {
+                    expenseAmount.classList.add('positive');
+                    expenseAmount.textContent = `+$${Math.abs(expense.amount).toFixed(2)}`;
+                } else {
+                    expenseAmount.classList.add('negative');
+                    expenseAmount.textContent = `-$${Math.abs(expense.amount).toFixed(2)}`;
+                }
+                
+                const deleteBtn = document.createElement('button');
+                deleteBtn.classList.add('delete-btn');
+                deleteBtn.textContent = 'Delete';
+                deleteBtn.addEventListener('click', () => deleteExpense(expense.id));
+                
+                const rightSide = document.createElement('div');
+                rightSide.style.display = 'flex';
+                rightSide.style.alignItems = 'center';
+                rightSide.appendChild(expenseAmount);
+                rightSide.appendChild(deleteBtn);
+                
+                expenseItem.appendChild(expenseInfo);
+                expenseItem.appendChild(rightSide);
+                expenseList.appendChild(expenseItem);
+            });
+        }
+
+        // Add new expense
+        function addExpense(e) {
+            e.preventDefault();
+            
+            const title = titleInput.value;
+            const amount = parseFloat(amountInput.value);
+            const category = categoryInput.value;
+            
+            if (!title || isNaN(amount)) {
+                alert('Please enter a valid title and amount');
+                return;
+            }
+            
+            const newExpense = {
+                id: Date.now(),
+                title,
+                amount,
+                category,
+                date: new Date().toISOString().split('T')[0]
+            };
+            
+            expenses.push(newExpense);
+            
+            // Save to localStorage
+            localStorage.setItem('expenses', JSON.stringify(expenses));
+            
+            updateSummary();
+            displayExpenses();
+            updateChart();
+            
+            // Reset form
+            expenseForm.reset();
+        }
+
+        // Delete expense
+        function deleteExpense(id) {
+            expenses = expenses.filter(expense => expense.id !== id);
+            
+            // Save to localStorage
+            localStorage.setItem('expenses', JSON.stringify(expenses));
+            
+            updateSummary();
+            displayExpenses();
+            updateChart();
+        }
+
+        // Update chart
+        function updateChart() {
+            // Clear previous chart
+            while (chartContainer.firstChild) {
+                if (chartContainer.firstChild !== chartYAxis) {
+                    chartContainer.removeChild(chartContainer.firstChild);
+                }
+            }
+            
+            // Group expenses by category
+            const categoryTotals = {};
+            expenses.forEach(expense => {
+                const category = expense.category;
+                if (!categoryTotals[category]) {
+                    categoryTotals[category] = 0;
+                }
+                categoryTotals[category] += Math.abs(expense.amount);
+            });
+            
+            // Find the maximum value for scaling
+            const maxValue = Math.max(...Object.values(categoryTotals), 1);
+            
+            // Update Y-axis
+            chartYAxis.innerHTML = '';
+            for (let i = 5; i >= 0; i--) {
+                const label = document.createElement('div');
+                label.textContent = `$${Math.round(maxValue * i / 5)}`;
+                chartYAxis.appendChild(label);
+            }
+            
+            // Create bars
+            let index = 0;
+            for (const category in categoryTotals) {
+                const value = categoryTotals[category];
+                const height = (value / maxValue) * 100;
+                
+                const bar = document.createElement('div');
+                bar.classList.add('bar');
+                bar.style.height = `${height}%`;
+                bar.style.left = `${60 + index * 60}px`;
+                
+                const barLabel = document.createElement('div');
+                barLabel.classList.add('bar-label');
+                barLabel.textContent = category;
+                barLabel.style.left = `${60 + index * 60}px`;
+                
+                chartContainer.appendChild(bar);
+                chartContainer.appendChild(barLabel);
+                
+                index++;
+            }
+        }
+
+        // Event listeners
+        expenseForm.addEventListener('submit', addExpense);
+
+        // Initial display
+        updateSummary();
+        displayExpenses();
+        updateChart();
+    </script>
+</body>
+</html>

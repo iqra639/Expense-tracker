@@ -38,6 +38,17 @@ app.use(express.json({
 }));
 
 // In-memory database for demonstration
+// Define users first since it's referenced in the expenses route
+const users = [
+  {
+    _id: '1',
+    username: 'Iqra',
+    email: 'Iqrazafarzafar647@gmail.com',
+    password: 'password123'
+  }
+];
+let userIdCounter = 2; // Start from 2 since we already have one user
+
 let expenses = [
   {
     _id: '1',
@@ -45,7 +56,8 @@ let expenses = [
     amount: -50.25,
     category: 'Food',
     date: new Date('2023-04-15'),
-    createdAt: new Date('2023-04-15')
+    createdAt: new Date('2023-04-15'),
+    userId: '1'
   },
   {
     _id: '2',
@@ -53,7 +65,8 @@ let expenses = [
     amount: 2000,
     category: 'Income',
     date: new Date('2023-04-01'),
-    createdAt: new Date('2023-04-01')
+    createdAt: new Date('2023-04-01'),
+    userId: '1'
   },
   {
     _id: '3',
@@ -61,7 +74,8 @@ let expenses = [
     amount: -800,
     category: 'Housing',
     date: new Date('2023-04-05'),
-    createdAt: new Date('2023-04-05')
+    createdAt: new Date('2023-04-05'),
+    userId: '1'
   }
 ];
 
@@ -194,15 +208,6 @@ app.put('/api/expenses/:id', (req, res) => {
 });
 
 // Simple auth routes
-const users = [
-  {
-    _id: '1',
-    username: 'Iqra',
-    email: 'Iqrazafarzafar647@gmail.com',
-    password: 'password123'
-  }
-];
-let userIdCounter = 2; // Start from 2 since we already have one user
 
 // Register
 app.post('/api/auth/register', (req, res) => {
@@ -328,7 +333,28 @@ app.get('/api/auth/me', (req, res) => {
 
 // Start server
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`Server running on port ${PORT}`);
-  console.log('Server is listening on all network interfaces');
+
+console.log('Starting server...');
+console.log('Environment variables:', {
+  PORT: process.env.PORT,
+  MONGO_URI: process.env.MONGO_URI ? 'Set' : 'Not set',
+  JWT_SECRET: process.env.JWT_SECRET ? 'Set' : 'Not set'
 });
+
+try {
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log(`Server running on port ${PORT}`);
+    console.log('Server is listening on all network interfaces');
+    console.log('Available routes:');
+    console.log('- GET /api/health');
+    console.log('- GET /api/expenses');
+    console.log('- POST /api/expenses');
+    console.log('- DELETE /api/expenses/:id');
+    console.log('- PUT /api/expenses/:id');
+    console.log('- POST /api/auth/register');
+    console.log('- POST /api/auth/login');
+    console.log('- GET /api/auth/me');
+  });
+} catch (error) {
+  console.error('Error starting server:', error);
+}

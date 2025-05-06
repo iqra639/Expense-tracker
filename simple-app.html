@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Expense Tracker</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background-color: #4a6cf7;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-radius: 5px 5px 0 0;
+        }
+        .content {
+            background-color: white;
+            padding: 20px;
+            border-radius: 0 0 5px 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #4a6cf7;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #3a5ce5;
+        }
+        .expense-list {
+            margin-top: 20px;
+        }
+        .expense-item {
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+        }
+        .expense-item:last-child {
+            border-bottom: none;
+        }
+        .expense-title {
+            font-weight: bold;
+        }
+        .expense-amount {
+            font-weight: bold;
+        }
+        .expense-amount.positive {
+            color: green;
+        }
+        .expense-amount.negative {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Expense Tracker</h1>
+        </div>
+        <div class="content">
+            <h2>Add New Transaction</h2>
+            <form id="expense-form">
+                <div class="form-group">
+                    <label for="title">Title</label>
+                    <input type="text" id="title" placeholder="Enter title..." required>
+                </div>
+                <div class="form-group">
+                    <label for="amount">Amount</label>
+                    <input type="number" id="amount" placeholder="Enter amount..." required>
+                    <small>Use negative values for expenses, positive for income</small>
+                </div>
+                <div class="form-group">
+                    <label for="category">Category</label>
+                    <select id="category">
+                        <option value="Food">Food</option>
+                        <option value="Housing">Housing</option>
+                        <option value="Transportation">Transportation</option>
+                        <option value="Entertainment">Entertainment</option>
+                        <option value="Utilities">Utilities</option>
+                        <option value="Income">Income</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                <button type="submit">Add Transaction</button>
+            </form>
+
+            <h2>Transactions</h2>
+            <div id="expense-list" class="expense-list">
+                <!-- Expenses will be added here dynamically -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Sample data
+        let expenses = [
+            { id: 1, title: 'Groceries', amount: -50.25, category: 'Food', date: '2023-04-15' },
+            { id: 2, title: 'Salary', amount: 2000, category: 'Income', date: '2023-04-01' },
+            { id: 3, title: 'Rent', amount: -800, category: 'Housing', date: '2023-04-05' }
+        ];
+
+        // DOM elements
+        const expenseForm = document.getElementById('expense-form');
+        const expenseList = document.getElementById('expense-list');
+        const titleInput = document.getElementById('title');
+        const amountInput = document.getElementById('amount');
+        const categoryInput = document.getElementById('category');
+
+        // Display expenses
+        function displayExpenses() {
+            expenseList.innerHTML = '';
+            
+            if (expenses.length === 0) {
+                expenseList.innerHTML = '<p>No transactions found</p>';
+                return;
+            }
+            
+            expenses.forEach(expense => {
+                const expenseItem = document.createElement('div');
+                expenseItem.classList.add('expense-item');
+                
+                const expenseInfo = document.createElement('div');
+                expenseInfo.innerHTML = `
+                    <div class="expense-title">${expense.title}</div>
+                    <div class="expense-category">${expense.category}</div>
+                `;
+                
+                const expenseAmount = document.createElement('div');
+                expenseAmount.classList.add('expense-amount');
+                if (expense.amount > 0) {
+                    expenseAmount.classList.add('positive');
+                    expenseAmount.textContent = `+$${Math.abs(expense.amount).toFixed(2)}`;
+                } else {
+                    expenseAmount.classList.add('negative');
+                    expenseAmount.textContent = `-$${Math.abs(expense.amount).toFixed(2)}`;
+                }
+                
+                expenseItem.appendChild(expenseInfo);
+                expenseItem.appendChild(expenseAmount);
+                expenseList.appendChild(expenseItem);
+            });
+        }
+
+        // Add new expense
+        function addExpense(e) {
+            e.preventDefault();
+            
+            const title = titleInput.value;
+            const amount = parseFloat(amountInput.value);
+            const category = categoryInput.value;
+            
+            if (!title || isNaN(amount)) {
+                alert('Please enter a valid title and amount');
+                return;
+            }
+            
+            const newExpense = {
+                id: expenses.length + 1,
+                title,
+                amount,
+                category,
+                date: new Date().toISOString().split('T')[0]
+            };
+            
+            expenses.push(newExpense);
+            displayExpenses();
+            
+            // Reset form
+            expenseForm.reset();
+        }
+
+        // Event listeners
+        expenseForm.addEventListener('submit', addExpense);
+
+        // Initial display
+        displayExpenses();
+    </script>
+</body>
+</html>
