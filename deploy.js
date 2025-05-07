@@ -2,26 +2,55 @@ const { execSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 
-// Generate a unique project name based on timestamp
+// Generate a unique project name based on timestamp and random string
 const timestamp = new Date().getTime().toString().slice(-6);
-const frontendProjectName = `iqra-expense-tracker-${timestamp}`;
-const backendProjectName = `iqra-expense-tracker-api-${timestamp}`;
+const randomString = Math.random().toString(36).substring(2, 7);
+const frontendProjectName = `iqra-expense-tracker-${timestamp}-${randomString}`;
+const backendProjectName = `iqra-expense-tracker-api-${timestamp}-${randomString}`;
 
 console.log(`\n=== Deploying Expense Tracker Application ===\n`);
 
 // Update frontend vercel.json with the new project name
 console.log(`Updating frontend project name to: ${frontendProjectName}`);
-const frontendVercelPath = path.join(__dirname, 'vercel.json');
-const frontendVercelConfig = JSON.parse(fs.readFileSync(frontendVercelPath, 'utf8'));
-frontendVercelConfig.name = frontendProjectName;
-fs.writeFileSync(frontendVercelPath, JSON.stringify(frontendVercelConfig, null, 2));
+try {
+  const frontendVercelPath = path.join(__dirname, 'vercel.json');
+  const frontendVercelConfig = JSON.parse(fs.readFileSync(frontendVercelPath, 'utf8'));
+  frontendVercelConfig.name = frontendProjectName;
+
+  // Update the API URL to point to the new backend
+  if (frontendVercelConfig.env && frontendVercelConfig.env.VITE_API_URL) {
+    const newApiUrl = `https://${backendProjectName}.vercel.app/api`;
+    console.log(`Updating API URL to: ${newApiUrl}`);
+    frontendVercelConfig.env.VITE_API_URL = newApiUrl;
+  }
+
+  fs.writeFileSync(frontendVercelPath, JSON.stringify(frontendVercelConfig, null, 2));
+  console.log('✅ Frontend vercel.json updated successfully');
+} catch (error) {
+  console.error('❌ Error updating frontend vercel.json:', error.message);
+  process.exit(1);
+}
 
 // Update backend vercel.json with the new project name
 console.log(`Updating backend project name to: ${backendProjectName}`);
-const backendVercelPath = path.join(__dirname, 'backend', 'vercel.json');
-const backendVercelConfig = JSON.parse(fs.readFileSync(backendVercelPath, 'utf8'));
-backendVercelConfig.name = backendProjectName;
-fs.writeFileSync(backendVercelPath, JSON.stringify(backendVercelConfig, null, 2));
+try {
+  const backendVercelPath = path.join(__dirname, 'backend', 'vercel.json');
+  const backendVercelConfig = JSON.parse(fs.readFileSync(backendVercelPath, 'utf8'));
+  backendVercelConfig.name = backendProjectName;
+
+  // Update CORS settings to allow the new frontend
+  if (backendVercelConfig.env && backendVercelConfig.env.ALLOW_ORIGIN) {
+    const newAllowOrigin = `https://${frontendProjectName}.vercel.app`;
+    console.log(`Updating CORS ALLOW_ORIGIN to: ${newAllowOrigin}`);
+    backendVercelConfig.env.ALLOW_ORIGIN = newAllowOrigin;
+  }
+
+  fs.writeFileSync(backendVercelPath, JSON.stringify(backendVercelConfig, null, 2));
+  console.log('✅ Backend vercel.json updated successfully');
+} catch (error) {
+  console.error('❌ Error updating backend vercel.json:', error.message);
+  process.exit(1);
+}
 
 // Deploy backend first
 console.log(`\n=== Deploying Backend API ===\n`);
@@ -67,4 +96,13 @@ try {
 console.log(`\n=== Deployment Complete ===\n`);
 console.log(`Backend API: ${backendUrl}`);
 console.log(`Frontend: https://${frontendProjectName}.vercel.app`);
+
+console.log('\n=== Important Information ===');
+console.log('1. Each deployment creates new projects with unique names to avoid the 10 project limit');
+console.log('2. The frontend is automatically configured to connect to the new backend');
+console.log('3. You can access your projects in the Vercel dashboard');
+console.log('\nProject Names:');
+console.log(`- Frontend: ${frontendProjectName}`);
+console.log(`- Backend: ${backendProjectName}`);
+
 console.log('\nThank you for using the Expense Tracker deployment script!');

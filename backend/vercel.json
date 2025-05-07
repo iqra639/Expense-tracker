@@ -14,7 +14,13 @@
     }
   ],
   "env": {
-    "MONGO_URI": "@mongo_uri",
-    "JWT_SECRET": "@jwt_secret"
+    "MONGO_URI": "mongodb+srv://ziqra:ZhrRifsN4bOpcZFg@cluster0.4vpmc.mongodb.net/expense-tracker?retryWrites=true&w=majority",
+    "JWT_SECRET": "iqra_expense_tracker_secure_jwt_key_2024",
+    "JWT_EXPIRY": "7d",
+    "ALLOW_ORIGIN": "*",
+    "API_PREFIX": "/api",
+    "API_VERSION": "v1",
+    "PORT": "5000",
+    "NODE_ENV": "production"
   }
 }
