@@ -6,11 +6,20 @@
       "src": "package.json",
       "use": "@vercel/static-build",
       "config": {
-        "distDir": "dist"
+        "distDir": "dist",
+        "buildCommand": "npm run build"
       }
     }
   ],
   "routes": [
+    {
+      "src": "/assets/(.*)",
+      "dest": "/assets/$1"
+    },
+    {
+      "src": "/(.*\\.(js|css|ico|png|jpg|jpeg|svg|webp|json))",
+      "dest": "/$1"
+    },
     {
       "src": "/(.*)",
       "dest": "/index.html"
@@ -20,6 +29,6 @@
     "silent": true
   },
   "env": {
-    "VITE_API_URL": "@vite_api_url"
+    "VITE_API_URL": "https://expense-tracker-api-iqra.vercel.app/api"
   }
 }
