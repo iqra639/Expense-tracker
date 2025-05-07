@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Debug</title>
+    <script>
+        async function testAPI() {
+            const apiUrl = 'http://localhost:5000/api';
+            
+            // Test health endpoint
+            try {
+                const healthResponse = await fetch(`${apiUrl}/health`);
+                const healthData = await healthResponse.json();
+                document.getElementById('health-result').textContent = JSON.stringify(healthData, null, 2);
+            } catch (error) {
+                document.getElementById('health-result').textContent = `Error: ${error.message}`;
+            }
+            
+            // Test expenses endpoint
+            try {
+                const expensesResponse = await fetch(`${apiUrl}/expenses`);
+                const expensesData = await expensesResponse.json();
+                document.getElementById('expenses-result').textContent = JSON.stringify(expensesData, null, 2);
+            } catch (error) {
+                document.getElementById('expenses-result').textContent = `Error: ${error.message}`;
+            }
+        }
+    </script>
+</head>
+<body>
+    <h1>API Debug Tool</h1>
+    <button onclick="testAPI()">Test API Endpoints</button>
+    
+    <h2>Health Endpoint</h2>
+    <pre id="health-result">Click the button to test</pre>
+    
+    <h2>Expenses Endpoint</h2>
+    <pre id="expenses-result">Click the button to test</pre>
+</body>
+</html>

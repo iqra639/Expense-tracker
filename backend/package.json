@@ -1,20 +1,22 @@
 {
-  "name": "backend",
+  "name": "iqra-expense-tracker-api",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node server.js",
-    "dev": "nodemon server.js"
+    "dev": "nodemon server.js",
+    "vercel-build": "echo 'Building API'"
   },
   "keywords": [],
-  "author": "",
+  "author": "Iqra",
   "license": "ISC",
-  "description": "",
+  "description": "Backend API for Iqra's Expense Tracker application",
   "dependencies": {
     "cors": "^2.8.5",
     "dotenv": "^16.5.0",
     "express": "^5.1.0",
+    "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.13.2"
   },
   "devDependencies": {

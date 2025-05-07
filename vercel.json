@@ -1,5 +1,6 @@
 {
   "version": 2,
+  "name": "iqra-expense-tracker-2024",
   "builds": [
     {
       "src": "package.json",

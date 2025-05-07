@@ -1,6 +1,9 @@
 import axios from 'axios';
 import { API_URL } from '../config';
 
+// Log the API URL for debugging
+console.log('ExpenseService - API URL:', API_URL);
+
 // Helper function to get auth token from localStorage
 const getAuthToken = () => {
   return localStorage.getItem('token');
@@ -20,7 +23,22 @@ const createAuthHeader = () => {
 // Get all expenses
 export const getExpenses = async () => {
   try {
-    const response = await axios.get(`${API_URL}/expenses`, createAuthHeader());
+    console.log('Fetching expenses from:', `${API_URL}/expenses`);
+
+    // Try with explicit configuration
+    console.log('Making request with explicit configuration');
+    const response = await axios({
+      method: 'get',
+      url: `${API_URL}/expenses`,
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      timeout: 10000, // 10 second timeout
+      withCredentials: false // Don't send cookies
+    });
+
+    console.log('Expenses response:', response.data);
     return response.data.data;
   } catch (error) {
     console.error('Error fetching expenses:', error);

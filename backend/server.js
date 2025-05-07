@@ -9,6 +9,18 @@ dotenv.config();
 // Create Express app
 const app = express();
 
+// Environment variables
+const NODE_ENV = process.env.NODE_ENV || 'development';
+const ALLOW_ORIGIN = process.env.ALLOW_ORIGIN || 'http://localhost:5173';
+const API_PREFIX = process.env.API_PREFIX || '/api';
+const API_VERSION = process.env.API_VERSION || 'v1';
+const JWT_EXPIRY = process.env.JWT_EXPIRY || '7d';
+
+console.log('Environment:', NODE_ENV);
+console.log('Allowed Origin:', ALLOW_ORIGIN);
+console.log('API Prefix:', API_PREFIX);
+console.log('API Version:', API_VERSION);
+
 // Middleware
 app.use(cors({
   origin: '*', // Allow all origins for testing
@@ -16,6 +28,28 @@ app.use(cors({
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
+
+// Add headers to all responses
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+
+  // Handle preflight requests
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+
+  next();
+});
+
+// Log CORS configuration
+console.log('CORS Configuration:', {
+  origin: '*',
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+});
 
 // Log all incoming requests
 app.use((req, res, next) => {
@@ -86,6 +120,10 @@ app.get('/api/health', (req, res) => {
 
 // Get all expenses
 app.get('/api/expenses', (req, res) => {
+  console.log('GET /api/expenses request received');
+  console.log('Headers:', req.headers);
+
+  // Return all expenses without authentication for now
   res.json({ success: true, count: expenses.length, data: expenses });
 });
 
@@ -239,8 +277,13 @@ app.post('/api/auth/register', (req, res) => {
 
   users.push(newUser);
 
-  // Generate token (in a real app, this would use JWT)
-  const token = `fake-jwt-token-${newUser._id}`;
+  // Generate JWT token
+  const jwt = require('jsonwebtoken');
+  const token = jwt.sign(
+    { id: newUser._id, email: newUser.email },
+    process.env.JWT_SECRET || 'fallback_secret',
+    { expiresIn: JWT_EXPIRY }
+  );
 
   res.status(201).json({
     success: true,
@@ -281,10 +324,15 @@ app.post('/api/auth/login', (req, res) => {
 
   console.log('User found:', user);
 
-  // Generate token (in a real app, this would use JWT)
-  const token = `fake-jwt-token-${user._id}`;
+  // Generate JWT token
+  const jwt = require('jsonwebtoken');
+  const token = jwt.sign(
+    { id: user._id, email: user.email },
+    process.env.JWT_SECRET || 'fallback_secret',
+    { expiresIn: JWT_EXPIRY }
+  );
 
-  console.log('Generated token:', token);
+  console.log('Generated JWT token for user:', user._id);
 
   res.status(200).json({
     success: true,
@@ -299,7 +347,8 @@ app.post('/api/auth/login', (req, res) => {
 
 // Get current user
 app.get('/api/auth/me', (req, res) => {
-  // In a real app, this would verify the JWT token
+  // Verify the JWT token
+  const jwt = require('jsonwebtoken');
   const authHeader = req.headers.authorization;
 
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -310,25 +359,37 @@ app.get('/api/auth/me', (req, res) => {
   }
 
   const token = authHeader.split(' ')[1];
-  const userId = token.split('-')[2];
 
-  const user = users.find(user => user._id === userId);
+  try {
+    // Verify token
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback_secret');
+    console.log('Decoded token:', decoded);
 
-  if (!user) {
-    return res.status(404).json({
+    const userId = decoded.id;
+    const user = users.find(user => user._id === userId);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        error: 'User not found'
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      user: {
+        id: user._id,
+        username: user.username,
+        email: user.email
+      }
+    });
+  } catch (error) {
+    console.error('Token verification failed:', error);
+    return res.status(401).json({
       success: false,
-      error: 'User not found'
+      error: 'Invalid token'
     });
   }
-
-  res.status(200).json({
-    success: true,
-    user: {
-      id: user._id,
-      username: user.username,
-      email: user.email
-    }
-  });
 });
 
 // Start server
