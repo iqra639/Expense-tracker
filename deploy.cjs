@@ -62,14 +62,14 @@ try {
   const frontendVercelPath = path.join(__dirname, 'vercel.json');
   const frontendVercelConfig = JSON.parse(fs.readFileSync(frontendVercelPath, 'utf8'));
   frontendVercelConfig.name = frontendProjectName;
-
+  
   // Update the API URL to point to the new backend
   if (frontendVercelConfig.env && frontendVercelConfig.env.VITE_API_URL) {
     const newApiUrl = `https://${backendProjectName}.vercel.app/api`;
     console.log(`Updating API URL to: ${newApiUrl}`);
     frontendVercelConfig.env.VITE_API_URL = newApiUrl;
   }
-
+  
   fs.writeFileSync(frontendVercelPath, JSON.stringify(frontendVercelConfig, null, 2));
   console.log('✅ Frontend vercel.json updated successfully');
 } catch (error) {
@@ -83,14 +83,14 @@ try {
   const backendVercelPath = path.join(__dirname, 'backend', 'vercel.json');
   const backendVercelConfig = JSON.parse(fs.readFileSync(backendVercelPath, 'utf8'));
   backendVercelConfig.name = backendProjectName;
-
+  
   // Update CORS settings to allow the new frontend
   if (backendVercelConfig.env && backendVercelConfig.env.ALLOW_ORIGIN) {
     const newAllowOrigin = `https://${frontendProjectName}.vercel.app`;
     console.log(`Updating CORS ALLOW_ORIGIN to: ${newAllowOrigin}`);
     backendVercelConfig.env.ALLOW_ORIGIN = newAllowOrigin;
   }
-
+  
   fs.writeFileSync(backendVercelPath, JSON.stringify(backendVercelConfig, null, 2));
   console.log('✅ Backend vercel.json updated successfully');
 } catch (error) {
